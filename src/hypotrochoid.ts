@@ -8,31 +8,10 @@ export type Params = {
 
 let latestRunParams: Params | null = null;
 
-function greatestCommonDivisor(a: number, b: number): number {
-  return b === 0 ? a : greatestCommonDivisor(b, a % b);
-}
-
-const hypotrochoid = (ctx: CanvasRenderingContext2D, { fixedCircleRadius: R, rollingCircleRadius: r, distanceToTracingPoint: d, strokeColor }: Params): void => {
-  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-
-  const centerX: number = ctx.canvas.width / 2;
-  const centerY: number = ctx.canvas.height / 2;
-  const step: number = 0.01;
-  let theta: number = 0;
-
-  ctx.beginPath();
-  ctx.moveTo(centerX + (R - r) * Math.cos(0) + d * Math.cos(0), centerY + (R - r) * Math.sin(0) - d * Math.sin(0));
-
-  while (theta < 2 * Math.PI * r / greatestCommonDivisor(R, r)) {
-    const x: number = (R - r) * Math.cos(theta) + d * Math.cos((R - r) / r * theta);
-    const y: number = (R - r) * Math.sin(theta) - d * Math.sin((R - r) / r * theta);
-    ctx.lineTo(centerX + x, centerY + y);
-    theta += step;
-  }
-
-  ctx.strokeStyle = strokeColor ?? '#fff';
-  ctx.closePath();
-  ctx.stroke();
+const hypotrochoid = ({ fixedCircleRadius: R, rollingCircleRadius: r, distanceToTracingPoint: d }: Params, theta: number): [ number, number ] => {
+  const x: number = (R - r) * Math.cos(theta) + d * Math.cos((R - r) / r * theta);
+  const y: number = (R - r) * Math.sin(theta) - d * Math.sin((R - r) / r * theta);
+  return [ x, y ];
 }
 
 export default (canvas: HTMLCanvasElement | null) => {
@@ -44,8 +23,26 @@ export default (canvas: HTMLCanvasElement | null) => {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
-  const draw = (context: CanvasRenderingContext2D, params: Params) => {
-    hypotrochoid(context, params);
+  const draw = (ctx: CanvasRenderingContext2D, params: Params) => {
+    const width: number = ctx.canvas.width;
+    const height: number = ctx.canvas.height;
+
+    ctx.fillRect(0, 0, width, height);
+    ctx.save();
+    ctx.translate(width / 2, height / 2);
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.strokeStyle = params.strokeColor;
+    ctx.beginPath();
+
+    let hypoTuple: [ number, number ] = hypotrochoid(params, 0);
+    ctx.moveTo(hypoTuple[0], hypoTuple[1]);
+    for (let i: number = 0; i < 10000; i += 5) {
+      hypoTuple = hypotrochoid(params, i * Math.PI / 200)
+      ctx.lineTo(hypoTuple[0], hypoTuple[1])
+    }
+
+    ctx.stroke()
+    ctx.restore()
   };
 
   const onResize = () => {
