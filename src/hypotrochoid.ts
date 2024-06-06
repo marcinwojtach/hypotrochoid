@@ -3,7 +3,6 @@ export type Params = {
   rollingCircleRadius: number;
   distanceToTracingPoint: number;
   strokeColor: string;
-  isRotating: boolean;
 }
 
 let latestRunParams: Params | null = null;
