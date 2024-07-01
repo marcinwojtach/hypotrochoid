@@ -34,7 +34,9 @@ export default (canvas: HTMLCanvasElement | null) => {
     ctx.beginPath();
 
     let hypoTuple: [ number, number ] = hypotrochoid(params, 0);
+
     ctx.moveTo(hypoTuple[0], hypoTuple[1]);
+
     for (let i: number = 0; i < 10000; i += 5) {
       hypoTuple = hypotrochoid(params, i * Math.PI / 200)
       ctx.lineTo(hypoTuple[0], hypoTuple[1])
